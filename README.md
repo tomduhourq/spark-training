@@ -6,4 +6,4 @@ To run the examples, you need to define ```SPARK_HOME``` as an environment varia
 
 and run ```sbt package``` to create the jar inside ```target``` folder.
 
-Run them with ```spark-submit --class **class-name** target/scala-2.10/*theJar*```
+Run them with ```spark-submit --class``` **class-name** ```target/scala-2.10/```*theJar*
