@@ -20,7 +20,11 @@ object SparkSQL {
 	import sqlContext.implicits._
 
 	// Create an RDD of Person objects and register it as a table.
-	val people = sc.textFile(sys.env.get("SPARK_HOME").get  + "/examples/src/main/resources/people.txt").map(_.split(",")).map(p => Person(p(0), p(1).trim.toInt)).toDF()
+	val people = sc.textFile(
+		sys.env.get("SPARK_HOME").get  + "/examples/src/main/resources/people.txt")
+		.map(_.split(","))
+		.map(p => Person(p(0), p(1).trim.toInt))
+		.toDF()
 
 	people.registerTempTable("people")
 
