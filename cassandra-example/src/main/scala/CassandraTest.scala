@@ -14,7 +14,6 @@ import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.SparkContext._
 
-
 object CassandraTest {
 
   def main(args: Array[String]) {
@@ -26,8 +25,8 @@ object CassandraTest {
     val job = new Job()
     job.setInputFormatClass(classOf[ColumnFamilyInputFormat])
 
-    val host = args(1)
-    val port = args(2)
+    val host: String = args(1)
+    val port: String = args(2)
 
     ConfigHelper.setInputInitialAddress(job.getConfiguration(), host)
     ConfigHelper.setInputRpcPort(job.getConfiguration(), port)
@@ -60,32 +59,32 @@ object CassandraTest {
       }
     }
 
-    // wc
+    // Lets get the word count in paras
     val counts = paraRdd.flatMap(p => p.split(" ")).map(word => (word, 1)).reduceByKey(_ + _)
 
-    counts.collect.foreach {
+    counts.collect().foreach {
       case (word, count) => println(word + ":" + count)
     }
 
     counts.map {
       case (word, count) => {
-        val colWord = new Column()
+        val colWord = new org.apache.cassandra.thrift.Column()
         colWord.setName(ByteBufferUtil.bytes("word"))
         colWord.setValue(ByteBufferUtil.bytes(word))
         colWord.setTimestamp(System.currentTimeMillis)
 
-        val colCount = new Column()
+        val colCount = new org.apache.cassandra.thrift.Column()
         colCount.setName(ByteBufferUtil.bytes("wcount"))
         colCount.setValue(ByteBufferUtil.bytes(count.toLong))
         colCount.setTimestamp(System.currentTimeMillis)
 
         val outputkey = ByteBufferUtil.bytes(word + "-COUNT-" + System.currentTimeMillis)
 
-        val mutations = new Mutation() :: new Mutation() :: Nil
-        mutations(0).setColumn_or_supercolumn(new ColumnOrSuperColumn())
-        mutations(0).column_or_supercolumn.setColumn(colWord)
-        mutations(1).setColumn_or_supercolumn(new ColumnOrSuperColumn())
-        mutations(1).column_or_supercolumn.setColumn(colCount)
+        val mutations: java.util.List[Mutation] = new Mutation() :: new Mutation() :: Nil
+        mutations.get(0).setColumn_or_supercolumn(new ColumnOrSuperColumn())
+        mutations.get(0).column_or_supercolumn.setColumn(colWord)
+        mutations.get(1).setColumn_or_supercolumn(new ColumnOrSuperColumn())
+        mutations.get(1).column_or_supercolumn.setColumn(colCount)
         (outputkey, mutations)
       }
     }.saveAsNewAPIHadoopFile("casDemo", classOf[ByteBuffer], classOf[List[Mutation]],
